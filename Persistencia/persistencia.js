@@ -145,6 +145,18 @@ module.exports = {
         return res.rows
     },
 
+    _get_livro_by_id: async function(book_id){
+        const client = new Client(conexao)
+        await client.connect();
+        
+        let sQuery = 'SELECT * FROM lib_livros '
+            sQuery += `WHERE book_id = '${book_id}'`
+        const res = await client.query(sQuery);
+
+        await client.end();    
+        return res.rows
+    },
+
     _get_autor: async function(autor_id){
         const client = new Client(conexao)
         await client.connect();
@@ -263,6 +275,39 @@ module.exports = {
         
         let sQuery = 'SELECT * FROM lib_clientes '
             sQuery += `WHERE nome    = '${nome}'`
+        const res = await client.query(sQuery);
+        await client.end();    
+        return res.rows
+    },
+
+    _get_cliente: async function(matricula_cliente){
+        const client = new Client(conexao)
+        await client.connect();
+        
+        let sQuery = 'SELECT * FROM lib_clientes '
+            sQuery += `WHERE matricula = '${matricula_cliente}'`
+        const res = await client.query(sQuery);
+        await client.end();    
+        return res.rows
+    }, 
+
+    _get_devolucao: async function(retirada_ref){
+        const client = new Client(conexao)
+        await client.connect();
+        
+        let sQuery = 'SELECT * FROM lib_devolucao '
+            sQuery += `WHERE retirada_ref = '${retirada_ref}'`
+        const res = await client.query(sQuery);
+        await client.end();    
+        return res.rows
+    },
+
+    _get_retirada_by_id: async function(retirada_ref){
+        const client = new Client(conexao)
+        await client.connect();
+        
+        let sQuery = 'SELECT * FROM lib_retirada '
+            sQuery += `WHERE id_retirada = '${retirada_ref}'`
         const res = await client.query(sQuery);
         await client.end();    
         return res.rows

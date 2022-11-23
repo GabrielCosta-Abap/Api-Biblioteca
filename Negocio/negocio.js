@@ -129,6 +129,31 @@ module.exports = {
             return
         }
 
+        let cliente = await oPersistencia._get_cliente(matricula_cliente)
+        if (cliente.length == 0) {
+            console.log('Cliente não existe')
+            return
+        }
+
+        let livro = await oPersistencia._get_livro_by_id(book_id)
+        if (livro.length == 0) {
+            console.log('Livro não encontrado!')
+            return
+        }
+
+        let retirada = await oPersistencia._get_retirada_by_id(retirada_ref)
+        if (retirada.length == 0) {
+            console.log('Não há retirada registrada para este livro!')
+            return
+        }
+
+        let devolucao = await oPersistencia._get_devolucao(retirada_ref)
+        if (devolucao.length > 0) {
+            console.log('Devolução já consta no sistema!')
+            return
+        }
+
+
         console.log('redisponibilizando livro...')
         await oPersistencia._disponibiliza_livro(book_id)
 
