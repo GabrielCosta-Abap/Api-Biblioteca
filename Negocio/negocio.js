@@ -1,3 +1,4 @@
+const { Console } = require('console')
 const oPersistencia = require('../Persistencia/persistencia')
 
 module.exports = {
@@ -122,17 +123,36 @@ module.exports = {
     },
 
     devolucao_livro: async (matricula_cliente, book_id, retirada_ref)=>{
-        
-        persistencia._disponibiliza_livro(book_id)
 
-        let nLivrosRetirados =  parseInt( await persistencia._get_livros_retirados(matricula_cliente))
+        if (!matricula_cliente, !book_id, !retirada_ref) {
+            console.log('Todos os campos são obrigatórios!')
+            return
+        }
+
+        console.log('redisponibilizando livro...')
+        await oPersistencia._disponibiliza_livro(book_id)
+
+        let nLivrosRetirados =  parseInt( await oPersistencia._get_livros_retirados(matricula_cliente))
         nLivrosRetirados -= 1
 
-        persistencia._reduz_livros_cliente(matricula_cliente, nLivrosRetirados)
+        console.log( 'atualizando conta do cliente...')
+        await oPersistencia._reduz_livros_cliente(matricula_cliente, nLivrosRetirados)
 
-        console.log(this._get_dias_atraso(retirada_ref))
+        console.log('calculando atraso...')
+        let nDiasAtraso = await oPersistencia._get_dias_atraso(retirada_ref)
 
-        persistencia._registra_devolucao(retirada_ref, persistencia._get_current_date(), 2)
+        if (nDiasAtraso > 0) {
+            console.log(`CONSTA ATRASO DE ${nDiasAtraso} DIAS!`)
+        }
 
-    }    
+        console.log('registrando devolução...')
+        let retorno = await oPersistencia._registra_devolucao(retirada_ref, oPersistencia._get_current_date(), 2)
+        if (retorno.rows.length > 0) {
+            console.log('Devolução realizada com sucesso!')
+        }else{
+            console.log('Erro ao realizar devolução')
+        }
+
+
+    }
 }

@@ -238,10 +238,9 @@ module.exports = {
         await client.connect();
         let sQuery = `INSERT INTO lib_devolucao (retirada_ref, data_entrega, dias_atraso) VALUES ('${retirada_ref}', '${data_entrega}', ${dias_atraso}) RETURNING *`
         
-        console.log(sQuery)
         const res = await client.query(sQuery);
         await client.end();   
-        console.log(res)
+        return res
     },
 
     _cadastra_cliente: async (nome, telefone)=>{
@@ -267,5 +266,19 @@ module.exports = {
         const res = await client.query(sQuery);
         await client.end();    
         return res.rows
+    },
+
+    _get_dias_atraso: async function (retirada_ref){
+        let data_retirada = await this._get_data_retirada(retirada_ref)
+        nDiasAtraso = new Date() - data_retirada
+        nDiasAtraso = Math.ceil(nDiasAtraso / (1000 * 3600 * 24))
+        
+        nDiasAtraso -= 15
+
+        if (nDiasAtraso > 0) {
+            return 0
+        }else{
+            return nDiasAtraso
+        }
     }
 }
