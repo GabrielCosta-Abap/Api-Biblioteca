@@ -72,10 +72,14 @@ module.exports = {
 
     _contabiliza_livro_cliente:async function(matricula){
         const pool = new Pool(conexao)
+        // const client = new Client(conexao)
         await pool.connect();
-        
+        // await client.connect();
+
         let sQuery = `SELECT livros_retirados FROM lib_clientes `
         sQuery += `WHERE matricula = '${matricula}'`
+        console.log(sQuery)
+        // let res = await client.query(sQuery);
         let res = await pool.query(sQuery);
 
         if (res.rows[0].livros_retirados == null) {
@@ -85,12 +89,16 @@ module.exports = {
         }
         
         nLivrosRetirados += 1
+        // await pool.end();
+        // await client.end();
 
+        // await pool.connect();
         // Atualiza quantidade de livros do cliente.
         sQuery = `UPDATE lib_clientes `
         sQuery += `SET livros_retirados = '${nLivrosRetirados}' `
         sQuery += `WHERE matricula = '${matricula}' RETURNING * `
         res = await pool.query(sQuery);
+
         await pool.end();
         return res.rows 
     },

@@ -87,7 +87,7 @@ module.exports = {
         
         console.log('verificando disponibilidade do livro...')
         let livro_disponivel = await oPersistencia._verifica_disponibilidade(id_livro)
-        if (livro_disponivel.length == 0) {
+        if (livro_disponivel[0].count == 0) {
             console.log('Livro indisponível! Tente outro dia :/')
             return
         }
@@ -95,8 +95,6 @@ module.exports = {
         console.log('verificando limite do cliente...')
         let retorno = await oPersistencia._verifica_limite_cliente(matricula_cliente)
        
-        console.log(retorno)
-        console.log(retorno > 0)
         if (retorno > 0) {
             console.log('Limite de livros atingido. Necessário efetuar devoluções primeiro.')
             return
@@ -121,5 +119,20 @@ module.exports = {
         }
         
         console.log('---------------------------------') 
-    }
+    },
+
+    devolucao_livro: async (matricula_cliente, book_id, retirada_ref)=>{
+        
+        persistencia._disponibiliza_livro(book_id)
+
+        let nLivrosRetirados =  parseInt( await persistencia._get_livros_retirados(matricula_cliente))
+        nLivrosRetirados -= 1
+
+        persistencia._reduz_livros_cliente(matricula_cliente, nLivrosRetirados)
+
+        console.log(this._get_dias_atraso(retirada_ref))
+
+        persistencia._registra_devolucao(retirada_ref, persistencia._get_current_date(), 2)
+
+    }    
 }
