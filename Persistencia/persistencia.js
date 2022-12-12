@@ -73,26 +73,29 @@ module.exports = {
     _contabiliza_livro_cliente:async function(matricula){
         const pool = new Pool(conexao)
         // const client = new Client(conexao)
-        await pool.connect();
+        // await pool.connect();
         // await client.connect();
 
-        let sQuery = `SELECT livros_retirados FROM lib_clientes `
-        sQuery += `WHERE matricula = '${matricula}'`
-        console.log(sQuery)
-        // let res = await client.query(sQuery);
-        let res = await pool.query(sQuery);
+        // let sQuery = `SELECT livros_retirados FROM lib_clientes `
+        // sQuery += `WHERE matricula = '${matricula}'`
+        // console.log(sQuery)
+        // // let res = await client.query(sQuery);
+        // let res = await pool.query(sQuery);
 
-        if (res.rows[0].livros_retirados == null) {
-            var nLivrosRetirados = 0
-        }else{
-            var nLivrosRetirados = parseInt(res.rows[0].livros_retirados)
-        }
+        // if (res.rows[0].livros_retirados == null) {
+        //     var nLivrosRetirados = 0
+        // }else{
+        //     var nLivrosRetirados = parseInt(res.rows[0].livros_retirados)
+        // }
         
+        let nLivrosRetirados = await this._recupera_livros_retirados(matricula)
+
         nLivrosRetirados += 1
         // await pool.end();
         // await client.end();
 
-        // await pool.connect();
+        console.log('passou do select')
+        await pool.connect();
         // Atualiza quantidade de livros do cliente.
         sQuery = `UPDATE lib_clientes `
         sQuery += `SET livros_retirados = '${nLivrosRetirados}' `
@@ -101,6 +104,25 @@ module.exports = {
 
         await pool.end();
         return res.rows 
+    },
+
+    _recupera_livros_retirados: async (matricula)=>{
+        const client = new Client(conexao)
+
+        // let sQuery = `SELECT livros_retirados FROM lib_clientes `
+        // sQuery += `WHERE matricula = ${matricula}`
+        // console.log(sQuery)
+        let res = await client.query('SELECT livros_retirados FROM lib_clientes WHERE matricula = $1', [matricula]);
+        // let res = await client.query(sQuery);
+        console.log('chegou aqui 1')
+        await client.end();
+        
+        console.log('chegou aqui 2')
+        if (res.rows[0].livros_retirados == null) {
+            return 0
+        }else{
+            return parseInt(res.rows[0].livros_retirados)
+        }
     },
 
     _indisponibiliza_livro: async function (book_id){
@@ -150,7 +172,7 @@ module.exports = {
         await client.connect();
         
         let sQuery = 'SELECT * FROM lib_livros '
-            sQuery += `WHERE book_id = '${book_id}'`
+        sQuery += `WHERE book_id = ${book_id}`
         const res = await client.query(sQuery);
 
         await client.end();    
@@ -325,5 +347,51 @@ module.exports = {
         }else{
             return nDiasAtraso
         }
+    },
+
+    _get_livros: async ()=>{
+        const client = new Client(conexao)
+        await client.connect();
+        
+        let sQuery = 'SELECT * FROM lib_livros'
+        const res = await client.query(sQuery);
+        await client.end();    
+        return res.rows
+    },
+
+    _atualiza_livro: async(livro)=>{
+        const client = new Client(conexao)
+        await client.connect();
+        
+        console.log(livro.disponivel)
+
+        let sQuery = `UPDATE lib_livros SET isbn           = '${livro.isbn}',`
+                                        +   ` nome           = '${livro.nome}',`
+                                        +   ` autor_id       = '${livro.autor_id}',`
+                                        +   ` editora        = '${livro.editora}',`
+                                        +   ` ano_publicacao = '${livro.ano_publicacao}',`
+                                        +   ` disponivel     = '${livro.disponivel}'`
+                                        + ` WHERE book_id = '${livro.book_id}' RETURNING *`
+        const res = await client.query(sQuery);
+        await client.end();   
+    
+        return res;
+    },
+
+    _deleta_livro: async (id)=>{
+        const client = new Client(conexao)
+        const res = {}
+
+        await client.connect();
+        
+        let sQuery = `DELETE FROM lib_livros WHERE book_id = '${id}' RETURNING *`
+        try {
+            res = await client.query(sQuery);
+        } catch (error) {
+            throw({code:400, message: "Este livro não pode ser deletado"})
+        }
+        await client.end();   
+    
+        return res;
     }
 }

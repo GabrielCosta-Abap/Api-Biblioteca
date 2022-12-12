@@ -18,18 +18,15 @@ module.exports = {
     cadastra_livro: async function (isbn, nome, autor_id, editora, ano_publicacao){
         
         if (!isbn || !nome || !autor_id || !editora || !ano_publicacao) {
-            console.log('Todos os campos são obrigatórios')
-            return
+            throw({code:400, message: 'Todos os campos são obrigatórios'})
         }
         
         if ((await oPersistencia._get_livro(isbn)).length > 0) {
-            console.log('Este livro já está cadastrado')
-            return
+            throw({code:302, message: 'Este livro já está cadastrado'})
         }
         
         if ((await oPersistencia._get_autor(autor_id)).length == 0) {
-            console.log('Autor não encontrado')
-            return
+            throw({code:404, message: 'Autor não encontrado'})
         }
         
         let livro_cadastrado = await oPersistencia._cadastra_livro(isbn, nome, autor_id, editora, ano_publicacao)
@@ -37,7 +34,7 @@ module.exports = {
             console.log('Livro cadastrado com sucesso!')
             console.table(livro_cadastrado)
         }else{
-            console.log('Deu pau ao cadastrar o livro')
+            throw({code: 500, message: 'Deu pau ao cadastrar o livro'})
         }
     },
 
@@ -89,16 +86,15 @@ module.exports = {
         console.log('verificando disponibilidade do livro...')
         let livro_disponivel = await oPersistencia._verifica_disponibilidade(id_livro)
         if (livro_disponivel[0].count == 0) {
-            console.log('Livro indisponível! Tente outro dia :/')
-            return
+            // console.log('Livro indisponível! Tente outro dia :/')
+            throw({code:400, message: 'Livro indisponível! Tente outro dia :/'})
         }
         
         console.log('verificando limite do cliente...')
         let retorno = await oPersistencia._verifica_limite_cliente(matricula_cliente)
-       
+        
         if (retorno > 0) {
-            console.log('Limite de livros atingido. Necessário efetuar devoluções primeiro.')
-            return
+            throw({code:400, message: 'Limite de livros atingido. Necessário efetuar devoluções primeiro.'})
         }
         
         console.log('Registrando retirada do livro...')
@@ -123,36 +119,31 @@ module.exports = {
     },
 
     devolucao_livro: async (matricula_cliente, book_id, retirada_ref)=>{
-
+        
         if (!matricula_cliente, !book_id, !retirada_ref) {
-            console.log('Todos os campos são obrigatórios!')
-            return
+            throw({code: 400, message: 'Todos os campos são obrigatórios!'})
         }
 
         let cliente = await oPersistencia._get_cliente(matricula_cliente)
         if (cliente.length == 0) {
-            console.log('Cliente não existe')
-            return
+            throw({code: 404, message: 'Cliente não existe!'})
         }
 
         let livro = await oPersistencia._get_livro_by_id(book_id)
         if (livro.length == 0) {
-            console.log('Livro não encontrado!')
-            return
+            throw({code: 404, message: 'Livro não encontrado!'})
         }
-
+        
         let retirada = await oPersistencia._get_retirada_by_id(retirada_ref)
         if (retirada.length == 0) {
-            console.log('Não há retirada registrada para este livro!')
-            return
+            throw({code: 404, message: 'Não há retirada registrada para este livro!'})
         }
 
         let devolucao = await oPersistencia._get_devolucao(retirada_ref)
         if (devolucao.length > 0) {
             console.log('Devolução já consta no sistema!')
-            return
+            throw({code: 302, message: 'Devolução já consta no sistema!'})
         }
-
 
         console.log('redisponibilizando livro...')
         await oPersistencia._disponibiliza_livro(book_id)
@@ -174,10 +165,70 @@ module.exports = {
         let retorno = await oPersistencia._registra_devolucao(retirada_ref, oPersistencia._get_current_date(), 2)
         if (retorno.rows.length > 0) {
             console.log('Devolução realizada com sucesso!')
+
+            return nDiasAtraso;
+
         }else{
-            console.log('Erro ao realizar devolução')
+            throw({code:500, message:'Erro ao realizar devolução'})
+        }
+    },
+
+    getLivros: ()=>{
+        return oPersistencia._get_livros()
+    },
+
+    atualizaLivro: async (livro)=>{
+        let livroNew = {}
+
+        try {
+            livroNew = await oPersistencia._get_livro_by_id(livro.book_id)
+            livroNew = livroNew[0]
+        } catch (error) {
+            throw({code:404, message:'Livro não encontrado'})
         }
 
+        let bModified = false
 
+        if (livro.isbn) {
+            livroNew.isbn = livro.isbn    
+            bModified = true
+        }
+        
+        if (livro.nome) {
+            livroNew.nome = livro.nome
+            bModified = true
+        }
+        
+        if (livro.autor_id) {
+            livroNew.autor_id = livro.autor_id
+            bModified = true
+        }
+        
+        if (livro.editora) {
+            livroNew.editora = livro.editora
+            bModified = true
+        }
+        
+        if (livro.ano_publicacao) {
+            livroNew.ano_publicacao = livro.ano_publicacao
+            bModified = true
+        }
+        
+        if (livro.disponivel || disponivel == ' ') {
+            livroNew.disponivel = livro.disponivel
+            bModified = true
+        }
+
+        if (bModified) {
+            console.log('chegou no update')
+            let updated = await oPersistencia._atualiza_livro(livroNew)
+            
+        }else{
+            throw({code:400, message: 'Não foram informadas modificações!'})
+        }
+    },
+    
+    deletaLivro: async (id)=>{
+       await oPersistencia._deleta_livro(id)
     }
 }

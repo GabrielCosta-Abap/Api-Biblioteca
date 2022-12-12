@@ -10,10 +10,10 @@ async function main(){
     if (autenticacao) {
 
         //  await oNegocio.cadastra_livro(105, 'glória maria', 1, 'bacanão', '2006')
-        //  await oNegocio.cadastra_autor('k', 'EUA')
+        //  await oNegocio.cadastra_autor('Ries', 'BR')
         //  await oNegocio.cadastra_cliente('Olavshdfnha', '(51)97777-7778')
-        //  await oNegocio.retirada_livro(2, 3)
-         await oNegocio.devolucao_livro(2,1,2)
+         await oNegocio.retirada_livro(2, 3)
+        //  await oNegocio.devolucao_livro(2,1,2)
     }
 }
 
