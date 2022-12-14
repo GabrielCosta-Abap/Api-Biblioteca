@@ -108,11 +108,18 @@ module.exports = {
 
     _recupera_livros_retirados: async (matricula)=>{
         const client = new Client(conexao)
+        let res = {}
 
         // let sQuery = `SELECT livros_retirados FROM lib_clientes `
         // sQuery += `WHERE matricula = ${matricula}`
         // console.log(sQuery)
-        let res = await client.query('SELECT livros_retirados FROM lib_clientes WHERE matricula = $1', [matricula]);
+        try {
+            res = await client.query('SELECT livros_retirados FROM lib_clientes WHERE matricula = $1', [matricula]);
+            console.log(res)
+        } catch (error) {
+            console.log('oie')
+            throw({code: 500, message: 'oie'})
+        }
         // let res = await client.query(sQuery);
         console.log('chegou aqui 1')
         await client.end();
@@ -173,6 +180,8 @@ module.exports = {
         
         let sQuery = 'SELECT * FROM lib_livros '
         sQuery += `WHERE book_id = ${book_id}`
+
+        console.log(sQuery)
         const res = await client.query(sQuery);
 
         await client.end();    
@@ -388,7 +397,7 @@ module.exports = {
         try {
             res = await client.query(sQuery);
         } catch (error) {
-            throw({code:400, message: "Este livro não pode ser deletado"})
+            throw({code:404, message: "Este livro não pode ser deletado"})
         }
         await client.end();   
     

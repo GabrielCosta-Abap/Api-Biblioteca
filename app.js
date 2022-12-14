@@ -66,12 +66,14 @@ app.put('/livros/:id', async(req, res) => {
   const body = req.body
   body.book_id = id
   try {
+    console.log('chegou aqui')
     await oNegocio.atualizaLivro(body)
     res.status(200).send('Livro atualizado com sucesso!')
   } catch (error) {
       if (error && error.code) {
         res.status(error.code).send(error.message)  
       }else{
+        console.log(error)
         res.status(500).send('deu pau na chamada da Api')  
       }
   }

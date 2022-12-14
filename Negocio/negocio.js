@@ -214,7 +214,7 @@ module.exports = {
             bModified = true
         }
         
-        if (livro.disponivel || disponivel == ' ') {
+        if (livro.disponivel || livro.disponivel == ' ') {
             livroNew.disponivel = livro.disponivel
             bModified = true
         }
