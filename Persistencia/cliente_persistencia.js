@@ -2,7 +2,6 @@ const { conexao } = require('./conexao');
 const { Client, Pool } = require('pg');
 
 module.exports = {
-
     
     _cadastra_cliente: async function (nome, telefone) {
         const client = new Client(conexao);
@@ -20,7 +19,7 @@ module.exports = {
         return res.rows;
     },
     
-    _listar_clientes: async ()=>{
+    _listar_clientes: async () => {
         const client = new Client(conexao);
         let res;        
 
