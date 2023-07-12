@@ -2,6 +2,16 @@ const { conexao } = require('./conexao');
 const { Client } = require('pg');
 
 module.exports = {
+    _get_autores: async ()=>{
+        const client = new Client(conexao);
+        await client.connect();
+
+        let sQuery = 'SELECT * FROM lib_autores';
+        const res = await client.query(sQuery);
+        await client.end();
+        return res.rows;        
+    },
+
     _get_autor: async function (autor_id) {
         const client = new Client(conexao);
         await client.connect();

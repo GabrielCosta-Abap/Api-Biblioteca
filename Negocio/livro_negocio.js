@@ -70,7 +70,7 @@ module.exports = {
         console.log('---------------------------------')
     },
 
-    devolucao_livro: async (matricula_cliente, book_id, retirada_ref) => {
+    devolucao_livro: async (book_id, matricula_cliente, retirada_ref) => {
 
         if (!matricula_cliente, !book_id, !retirada_ref) {
             throw ({ code: 400, message: 'Todos os campos são obrigatórios!' })

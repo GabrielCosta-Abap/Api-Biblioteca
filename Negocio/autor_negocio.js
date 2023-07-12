@@ -1,6 +1,10 @@
 const oPersistencia = require('../Persistencia/autor_persistencia')
 
 module.exports = {
+    getAutores: async ()=>{
+        return oPersistencia._get_autores()
+    },
+
     cadastra_autor: async function (nome, pais) {
 
         if (!nome || !pais) {
